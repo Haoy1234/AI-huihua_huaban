@@ -9,6 +9,7 @@ import { CanvasSettings } from './components/CanvasSettings';
 import { LayerPanel } from './components/LayerPanel';
 import { BoardPanel } from './components/BoardPanel';
 import { InspirationLibrary } from './components/InspirationLibrary';
+import { CameraCapture } from './components/CameraCapture';
 import type { Tool, Point, Element, ImageElement, PathElement, ShapeElement, TextElement, ArrowElement, UserEffect, LineElement, WheelAction, GroupElement, Board } from './types';
 import { editImageWithAI, generateImageFromText, getAvailableProviders, type AIServiceProvider } from './services/aiServiceManager.ts';
 import { fileToDataUrl } from './utils/fileUtils';
@@ -387,6 +388,7 @@ const App: React.FC = () => {
     const [isLayerPanelOpen, setIsLayerPanelOpen] = useState(false);
     const [isBoardPanelOpen, setIsBoardPanelOpen] = useState(false);
     const [isInspirationLibraryOpen, setIsInspirationLibraryOpen] = useState(false);
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
     // 新增：高级生成控制状态（不影响现有PromptBar）
     const [imageAspectRatio, setImageAspectRatio] = useState<ImageAspectRatio>('1:1');
     const [numberOfImages, setNumberOfImages] = useState<number>(1);
@@ -690,6 +692,13 @@ const App: React.FC = () => {
             console.error(err);
         }
     }, [getCanvasPoint, activeBoardId, setElements]);
+
+    const handleCameraCapture = useCallback((blob: Blob, fileName: string) => {
+        // 将 Blob 转换为 File 对象
+        const file = new File([blob], fileName, { type: 'image/png' });
+        // 复用现有的图片添加逻辑
+        handleAddImageElement(file);
+    }, [handleAddImageElement]);
 
      const getSelectableElement = (elementId: string, allElements: Element[]): Element | null => {
         const element = allElements.find(el => el.id === elementId);
@@ -1909,6 +1918,7 @@ const App: React.FC = () => {
                 drawingOptions={drawingOptions}
                 setDrawingOptions={setDrawingOptions}
                 onUpload={handleAddImageElement}
+                onCameraCapture={() => setIsCameraOpen(true)}
                 isCropping={!!croppingState}
                 onConfirmCrop={handleConfirmCrop}
                 onCancelCrop={handleCancelCrop}
@@ -2457,8 +2467,22 @@ const App: React.FC = () => {
                     isLoading={isLoading}
                     onOpenInspiration={() => setIsInspirationLibraryOpen(true)}
                     onGenerate={() => {
+                        // 检查是否有选中的图片元素
+                        const hasSelectedImage = selectedElementIds.some(id => {
+                            const el = elements.find(e => e.id === id);
+                            return el && el.type === 'image';
+                        });
+
+                        // 如果有选中图片且在图片生成模式，使用图生图逻辑
+                        if (hasSelectedImage && generationModeV2 === 'image') {
+                            console.log('✅ V2模式：检测到选中图片，执行图生图');
+                            handleGenerate(undefined, false);
+                            return;
+                        }
+
                         // 将 V2 模式驱动生成逻辑
                         if (generationModeV2 === 'image') {
+                            console.log('📝 V2模式：无选中图片，执行文生图');
                             (async () => {
                                 if (!prompt.trim()) return;
                                 try {
@@ -2616,6 +2640,21 @@ const App: React.FC = () => {
 
             {/* 进度提示（视频生成等） */}
             <ProgressToast message={progressMessage} />
+
+            {/* 相机拍照组件 */}
+            {isCameraOpen && (
+                <CameraCapture
+                    onCapture={handleCameraCapture}
+                    onClose={() => setIsCameraOpen(false)}
+                    t={(key) => {
+                        const keys = key.split('.');
+                        if (keys.length === 2 && keys[0] === 'camera') {
+                            return (translations[language] as any).toolbar?.camera?.[keys[1]] || key;
+                        }
+                        return (translations[language] as any).toolbar?.[key] || key;
+                    }}
+                />
+            )}
         </div>
     );
 };

@@ -81,13 +81,13 @@ export const AI_SERVICE_CONFIGS: Record<AIServiceProvider, AIServiceConfig> = {
     displayName: 'OpenRouter',
     baseUrl: 'https://openrouter.ai/api/v1',
     model: 'google/gemini-2.5-flash-image-preview',
-    apiKey: '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',
+    apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || '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',
     supportedFeatures: ['text-to-image', 'image-edit'],
   }
 };
 
 // 硅基流动API密钥
-const SILICON_FLOW_API_KEY = 'sk-rtddpmojvcashzpwrceinvstfkzilcanzengsykhmerqdouf';
+const SILICON_FLOW_API_KEY = import.meta.env.VITE_SILICONFLOW_API_KEY || 'sk-rtddpmojvcashzpwrceinvstfkzilcanzengsykhmerqdouf';
 
 // 导入原有的Gemini服务
 import { generateImageFromText as geminiGenerateImage, editImage as geminiEditImage } from './geminiService';

@@ -11,6 +11,7 @@ interface ToolbarProps {
     drawingOptions: { strokeColor: string; strokeWidth: number; opacity?: number };
     setDrawingOptions: (options: { strokeColor: string; strokeWidth: number; opacity?: number }) => void;
     onUpload: (file: File) => void;
+    onCameraCapture?: () => void;
     isCropping: boolean;
     onConfirmCrop: () => void;
     onCancelCrop: () => void;
@@ -111,6 +112,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     drawingOptions,
     setDrawingOptions,
     onUpload,
+    onCameraCapture,
     isCropping,
     onConfirmCrop,
     onCancelCrop,
@@ -262,6 +264,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 <div className="w-10 h-px bg-white/30"></div>
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
                 <ToolButton label={t('toolbar.upload')} onClick={handleUploadClick} icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>} />
+                {/* 相机拍照按钮 */}
+                {onCameraCapture && (
+                    <ToolButton 
+                        label={t('toolbar.camera.title')} 
+                        onClick={onCameraCapture} 
+                        icon={
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                <circle cx="12" cy="13" r="4"/>
+                            </svg>
+                        } 
+                    />
+                )}
             </div>
 
             <div className="w-10 h-px bg-white/30"></div>
